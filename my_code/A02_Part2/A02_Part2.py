@@ -65,9 +65,18 @@ def my_main(spark, my_dataset_dir, bike_id):
     # (4) The resVAL iterator returned by 'collect' must be printed straight away, you cannot edit it to alter its format for printing.
 
     # Type all your code here. Use as many Spark SQL operations as needed.
-    pass
-
-
+    
+    # Filtered to just the relevant trips for the bike
+    # inputDF = inputDF.sort("trip_id", ascending=True)
+    inputDF.select("start_time", "start_station_name", "stop_time", "stop_station_name", "bike_id", "trip_id").createOrReplaceTempView("trips")
+    bike_trips_DF = spark.sql("SELECT start_time, start_station_name, stop_time, stop_station_name, trip_id FROM trips WHERE bike_id = " + str(bike_id))
+    
+    # Remove if previous is incorrect
+    window = pyspark.sql.window.Window.orderBy("trip_id").rowsBetween(-1,-1)
+    last_station_DF = bike_trips_DF.withColumn("last_station_name", pyspark.sql.functions.lag("stop_station_name").over(window)).withColumn("last_time", pyspark.sql.functions.lag("stop_time").over(window))#.createOrReplaceTempView("bike_trips")
+    # last_station_DF = spark.sql("SELECT trip_id, start_time, start_station_name, stop_time, stop_station_name FROM bike_trips WHERE start_station_name != last_station").show(100, False)
+    last_station_DF.filter("start_station_name <> last_station_name").createOrReplaceTempView("bike_trips")
+    solutionDF = spark.sql("Select last_time as start_time, last_station_name as start_station_name, start_time as stop_time, start_station_name as stop_station_name FROM bike_trips")
 
 
 
@@ -76,9 +85,14 @@ def my_main(spark, my_dataset_dir, bike_id):
     # ------------------------------------------------
 
     # Operation A1: 'collect' to get all results
-    resVAL = solutionDF.collect()
-    for item in resVAL:
-        print(item)
+    with open("../../my_results/A02_Part2/result.txt", "w", encoding='utf-8') as file:
+        resVAL = solutionDF.collect()
+        for item in resVAL:
+            print(item)
+            
+            # Print to results.txt
+            file.write(str(item))
+            file.write('\n')
 
 # --------------------------------------------------------
 #
@@ -102,10 +116,10 @@ if __name__ == '__main__':
     local_False_databricks_True = False
 
     # 3. We set the path to my_dataset and my_result
-    my_local_path = "../../../../3_Code_Examples/L15-25_Spark_Environment/"
+    my_local_path = "../../"
     my_databricks_path = "/"
 
-    my_dataset_dir = "FileStore/tables/6_Assignments/my_dataset_1/"
+    my_dataset_dir = "my_datasets/my_dataset_1"
 
     if local_False_databricks_True == False:
         my_dataset_dir = my_local_path + my_dataset_dir
