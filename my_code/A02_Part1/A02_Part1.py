@@ -67,19 +67,30 @@ def my_main(spark, my_dataset_dir):
     # Type all your code here. Use as many Spark SQL operations as needed.
     # pass
 
-    inputDF.show()
+    
 
+    startStationsDF = inputDF.select('start_station_name').createOrReplaceTempView("StartStations") # Just get the start stations
+    stopStationsDF = inputDF.select('stop_station_name').createOrReplaceTempView("StopStations") # Just get the stop stations
 
+    start_Station_Count = spark.sql("Select start_station_name as station, count(start_station_name) as num_departure_trips from StartStations Group by start_station_name")
+    end_Station_Count = spark.sql("Select stop_station_name as station, count(stop_station_name) as num_arrival_trips from StopStations Group by stop_station_name")
 
+    # Create a combined list without duplicate stations
+    solutionDF = start_Station_Count.join(end_Station_Count, "station", "full").fillna(0)
 
     # ------------------------------------------------
     # END OF YOUR CODE
     # ------------------------------------------------
-
+    
     # Operation A1: 'collect' to get all results
-    resVAL = solutionDF.collect()
-    for item in resVAL:
-        print(item)
+    with open("../../my_results/A02_Part1/result.txt", "w", encoding='utf-8') as file:
+        resVAL = solutionDF.collect()
+        for item in resVAL:
+            print(item)
+
+            # Print to results.txt
+            file.write(str(item))
+            file.write('\n')
 
 # --------------------------------------------------------
 #
