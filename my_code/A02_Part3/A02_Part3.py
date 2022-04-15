@@ -84,25 +84,43 @@ def read_graph_from_folder(my_dataset_dir):
 # ------------------------------------------
 def compute_page_rank(edges_per_node, reset_probability, max_iterations):
 
-    # ------------------------------------------------
-    # START OF YOUR CODE:
-    # ------------------------------------------------
+    # Create Dictionary to store page rank 
+    page_rank_dict = {}
+    for node in edges_per_node:
+        page_rank_dict[node] = 1
 
-    # Remember that the function must return a dictionary with:
-    # Key => The node number
-    # Value => The PageRank value computed for this node.
+    # Start ranking
+    for iteration in range(max_iterations):
+        # print("\nIteration: "+ str(iteration + 1) + " of " + str(max_iterations) + "\n")
+        pre_interation_pagerank = page_rank_dict.copy()
 
-    # Type all your code here.
-    pass
+        # Iterate through each node and check neighbours
+        for node in edges_per_node:
+            # print("Node: " + str(node))
+            number_of_neighbours = edges_per_node[node][0]
+            list_of_neighbours = edges_per_node[node][1]
+            received_values = 0
+
+            #Check what values will be received from each neighbour
+            for neigbour_node in list_of_neighbours:
+                
+                neighbour_node_num = edges_per_node[neigbour_node][0]
+                neighbour_node_value = pre_interation_pagerank[neigbour_node] / neighbour_node_num
+                # print("\tNeighbour Node: " + str(neigbour_node) + " has " + str(neighbour_node_num) + " neighbours")
+                # print("\tValue to give to node (", node, ") is ", neighbour_node_value)
+                received_values += neighbour_node_value
 
 
 
+            #Update Main Page Rank
+            page_rank_dict[node] = (reset_probability) + ((1.0 - reset_probability) * received_values)
 
+        # print()
+        # print(pre_interation_pagerank)
+        # print(page_rank_dict)
 
-
-    # ------------------------------------------------
-    # END OF YOUR CODE
-    # ------------------------------------------------
+    
+    return(page_rank_dict)
 
 # ------------------------------------------
 # FUNCTION my_main
@@ -119,8 +137,12 @@ def my_main(my_dataset_dir, reset_probability, max_iterations):
     rank_per_node.sort(reverse=True)
 
     # 4. We print them
-    for item in rank_per_node:
-        print("id=" + str(item[1]) + "; pagerank=" + str(item[0]))
+    with open("../../my_results/A02_Part3/result.txt", "w", encoding='utf-8') as file:
+        for item in rank_per_node:
+            print("id=" + str(item[1]) + "; pagerank=" + str(item[0]))
+
+            file.write("id=" + str(item[1]) + "; pagerank=" + str(item[0]))
+            file.write('\n')
 
 # --------------------------------------------------------
 #
@@ -145,10 +167,10 @@ if __name__ == '__main__':
     local_False_databricks_True = False
 
     # 3. We set the path to my_dataset and my_result
-    my_local_path = "../../../../3_Code_Examples/L15-25_Spark_Environment/"
+    my_local_path = "../../"
     my_databricks_path = "/"
 
-    my_dataset_dir = "FileStore/tables/6_Assignments/my_dataset_2/"
+    my_dataset_dir = "my_datasets/my_dataset_2/"
 
     if local_False_databricks_True == False:
         my_dataset_dir = my_local_path + my_dataset_dir
