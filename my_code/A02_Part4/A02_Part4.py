@@ -19,6 +19,7 @@
 # ------------------------------------------
 # IMPORTS
 # ------------------------------------------
+from socket import SOL_UDP
 import pyspark
 import pyspark.sql.functions
 
@@ -52,11 +53,40 @@ def my_main(spark, my_dataset_dir, source_node):
     # (4) The resVAL iterator returned by 'collect' must be printed straight away, you cannot edit it to alter its format for printing.
 
     # Type all your code here. Use as many Spark SQL operations as needed.
-    pass
+    # inputDF.show(50, False)
+    inputDF.show()
+    
+    # Init Results Dataframe
+    resultsDF = inputDF.select(inputDF.source.alias("id"), pyspark.sql.functions.lit("0").alias("cost"), pyspark.sql.functions.lit("").alias("path"))
+    resultsDF = resultsDF.distinct().sort(resultsDF.id.asc())
+    resultsDF = resultsDF.withColumn("path", pyspark.sql.functions.when(resultsDF.id == source_node, source_node).otherwise(""))
+    resultsDF = resultsDF.withColumn("cost", pyspark.sql.functions.when(resultsDF.id != source_node, -1).otherwise(0))
+    resultsDF.show(truncate = False)
+    
+    edge_candidites = inputDF.filter(inputDF.source == source_node) # Get possible edges
+    edge_candidites.show(truncate = False)
 
+    visited_nodes = resultsDF.select(resultsDF.id, pyspark.sql.functions.lit(False).alias("visited"))
+    visited_nodes.show(truncate = False)
 
+    while (len(edge_candidites.head(1)) > 0):
+        
+        #Get best edge candidate
+        selected_candidate = edge_candidites.filter(edge_candidites.source == 1).sort(edge_candidites.weight.asc()).createOrReplaceTempView("selected_candidates")
+        # cur
+        spark.sql("Select * from selected_candidates").show()
 
+        best_path = 
 
+        
+        
+        quit()
+        # def checkCandidites(x): 
+        #     new_source_node = x[0][0]
+        #     new_target_node = x[0][1]
+        #     res = 
+
+        # res = edge_candidites.foreach(lambda x: checkCandidites(x))
 
     # ------------------------------------------------
     # END OF YOUR CODE
@@ -89,11 +119,10 @@ if __name__ == '__main__':
     local_False_databricks_True = False
 
     # 3. We set the path to my_dataset and my_result
-    my_local_path = "../../../../3_Code_Examples/L15-25_Spark_Environment/"
+    my_local_path = "../../"
     my_databricks_path = "/"
 
-    my_dataset_dir = "FileStore/tables/6_Assignments/my_dataset_3/"
-
+    my_dataset_dir = "my_datasets/my_dataset_3/"
     if local_False_databricks_True == False:
         my_dataset_dir = my_local_path + my_dataset_dir
     else:

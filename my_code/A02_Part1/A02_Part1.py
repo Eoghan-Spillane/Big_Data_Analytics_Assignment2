@@ -83,14 +83,9 @@ def my_main(spark, my_dataset_dir):
     # ------------------------------------------------
     
     # Operation A1: 'collect' to get all results
-    with open("../../my_results/A02_Part1/result.txt", "w", encoding='utf-8') as file:
-        resVAL = solutionDF.collect()
-        for item in resVAL:
-            print(item)
-
-            # Print to results.txt
-            file.write(str(item))
-            file.write('\n')
+    resVAL = solutionDF.collect()
+    for item in resVAL:
+        print(item)
 
 # --------------------------------------------------------
 #

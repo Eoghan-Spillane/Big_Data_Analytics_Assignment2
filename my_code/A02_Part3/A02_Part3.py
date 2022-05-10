@@ -135,14 +135,10 @@ def my_main(my_dataset_dir, reset_probability, max_iterations):
     # 3. We sort the nodes in decreasing order in their rank
     rank_per_node = [ (round(page_rank_per_node[node], 2), node) for node in page_rank_per_node ]
     rank_per_node.sort(reverse=True)
-
+    
     # 4. We print them
-    with open("../../my_results/A02_Part3/result.txt", "w", encoding='utf-8') as file:
-        for item in rank_per_node:
-            print("id=" + str(item[1]) + "; pagerank=" + str(item[0]))
-
-            file.write("id=" + str(item[1]) + "; pagerank=" + str(item[0]))
-            file.write('\n')
+    for item in rank_per_node:
+        print("id=" + str(item[1]) + "; pagerank=" + str(item[0]))
 
 # --------------------------------------------------------
 #

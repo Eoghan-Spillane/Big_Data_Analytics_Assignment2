@@ -85,14 +85,9 @@ def my_main(spark, my_dataset_dir, bike_id):
     # ------------------------------------------------
 
     # Operation A1: 'collect' to get all results
-    with open("../../my_results/A02_Part2/result.txt", "w", encoding='utf-8') as file:
-        resVAL = solutionDF.collect()
-        for item in resVAL:
-            print(item)
-            
-            # Print to results.txt
-            file.write(str(item))
-            file.write('\n')
+    resVAL = solutionDF.collect()
+    for item in resVAL:
+        print(item)
 
 # --------------------------------------------------------
 #
